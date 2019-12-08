@@ -24,7 +24,11 @@ const makeDecrementTimer = ({ timersDb }) => {
       remainingDuration: decremented.getRemainingDuration()
     });
 
-    return decremented;
+    return {
+      id: decremented.getId(),
+      duration: decremented.getDuration(),
+      remainingDuration: decremented.getRemainingDuration()
+    };
   };
 };
 
