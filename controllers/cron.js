@@ -1,6 +1,6 @@
-const makeCron = ({ queue, decrementTimer }) => async () => {
+const makeCron = ({ listQueue, decrementTimer }) => async () => {
     try {
-        const list = await queue.listQueue()
+        const list = await listQueue()
         list.map({ id, res } => {
             const decremented = await decrementTimer({ id })
             res.send(decremented.remainingDuration)
