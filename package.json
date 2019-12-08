@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cron": "^1.7.2",
     "ws": "^7.2.0"
   }
 }
