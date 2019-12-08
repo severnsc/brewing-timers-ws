@@ -1,4 +1,4 @@
-const makeCron = ({ queue, decrementTimer }) => async req => {
+const makeCron = ({ queue, decrementTimer }) => async () => {
     try {
         const list = await queue.listQueue()
         list.map({ id, res } => {
