@@ -1,6 +1,6 @@
-import makeDecrementTimer from "./decrement-timer";
-import makeEnqueue from "./enqueue";
-import makeDequeue from "./dequeue";
+const makeDecrementTimer = require("./decrement-timer");
+const makeEnqueue = require("./enqueue");
+const makeDequeue = require("./dequeue");
 
 const timersDb = Object.freeze({
   findById: () => Promise.resolve(),
@@ -26,4 +26,4 @@ const timerService = Object.freeze({
   dequeue
 });
 
-export default timerService;
+module.exports = timerService;

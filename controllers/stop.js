@@ -9,4 +9,4 @@ const makeStop = deQueueId => async (req, res) => {
   }
 };
 
-export default makeStop;
+module.exports = makeStop;

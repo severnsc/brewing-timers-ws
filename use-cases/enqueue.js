@@ -10,4 +10,4 @@ const makeEnqueue = ({ queue }) => async ({ id }) => {
   };
 };
 
-export default makeEnqueue;
+module.exports = makeEnqueue;

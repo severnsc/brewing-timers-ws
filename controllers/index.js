@@ -1,7 +1,7 @@
-import timersService from "../use-cases";
-import makeMessageController from "./message";
-import makeStartController from "./start";
-import makeStopController from "./stop";
+const timersService = require("../use-cases");
+const makeMessageController = require("./message");
+const makeStartController = require("./start");
+const makeStopController = require("./stop");
 
 const startController = makeStartController(timersService.enqueue);
 const stopController = makeStopController(timersService.dequeue);
@@ -14,4 +14,4 @@ const timerController = Object.freeze({
   messageController
 });
 
-export default timerController;
+module.exports = timerController;

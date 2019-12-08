@@ -1,3 +1,4 @@
+const timerController = require("./controllers");
 const WebSocket = require("ws");
 
 const wss = new WebSocket.Server({ port: 8080 });
@@ -7,38 +8,25 @@ const wss = new WebSocket.Server({ port: 8080 });
 //is reached. Send a message back with the updated
 //ms every 1000 ms.
 
-const START = "start";
-const STOP = "stop";
-let id = 0;
-let intervals = [];
+//Controller
+//(req, res) => undefined
 
-function incoming(req) {
-  const json = JSON.parse(req);
-  switch (json.type) {
-    case START: {
-      id += 1;
-      let msState = json.ms;
-      const interval = setInterval(() => {
-        msState -= 1000;
-        ws.send(JSON.stringify({ ms: msState, id }));
-      }, 1000);
-      intervals.push({ id, interval });
-      break;
-    }
-    case STOP: {
-      const { interval } = intervals.find(i => i.id === json.id);
-      clearInterval(interval);
-      intervals = intervals.filter(i => i.id !== json.id);
-      ws.send("stopped");
-      break;
-    }
-    default:
-      ws.send("invalid type");
-  }
-}
+//Timer: {id, duration, remainingDuration}
+//Timer, getter to retrieve a timer by id, decrement logic
+//Always returns Timer object
+//Getter: timerById(id: string) => Timer
+//Decrement: timer.decrement() => Timer
+
+//Entity - Timer
+//Use Cases - Getting, Decrementing
+//Controller - req/res layer, start, stop, cronjob
+//Frameworks & Drivers - websockets, cache, persistence
 
 wss.on("connection", function connection(ws) {
-  ws.on("message", incoming);
+  ws.on("message", reqString => {
+    const req = JSON.parse(reqString);
+    timerController.messageController(res, ws);
+  });
 
   ws.send("something");
 });

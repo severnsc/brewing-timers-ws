@@ -9,4 +9,4 @@ const makeStart = enqueueId => async (req, res) => {
   }
 };
 
-export default makeStart;
+module.exports = makeStart;

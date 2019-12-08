@@ -16,4 +16,4 @@ const makeMessage = ({ startController, stopController }) => (req, res) => {
   }
 };
 
-export default makeMessage;
+module.exports = makeMessage;

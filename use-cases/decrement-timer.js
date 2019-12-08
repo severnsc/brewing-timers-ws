@@ -1,4 +1,4 @@
-import makeTimer from "../timer";
+const makeTimer = require("../timer");
 const makeDecrementTimer = ({ timersDb }) => {
   return async function decrementTimer({ id }) {
     if (!id) {
@@ -32,4 +32,4 @@ const makeDecrementTimer = ({ timersDb }) => {
   };
 };
 
-export default makeDecrementTimer;
+module.exports = makeDecrementTimer;

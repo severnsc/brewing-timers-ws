@@ -1,3 +1,3 @@
-import makeTimer from "./timer";
+const makeTimer = require("./timer");
 
-export default makeTimer;
+module.exports = makeTimer;

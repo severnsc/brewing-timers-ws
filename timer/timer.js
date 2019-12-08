@@ -16,4 +16,4 @@ const makeTimer = ({ id, duration, remainingDuration }) => {
   });
 };
 
-export default makeTimer;
+module.exports = makeTimer;
