@@ -2,7 +2,8 @@ const timerController = require("./controllers");
 const WebSocket = require("ws");
 const CronJob = require("cron").CronJob;
 
-const wss = new WebSocket.Server({ port: 8080 });
+const cronJob = new CronJob("* * * * * *", timerController.cron);
+const wss = new WebSocket.Server({ port: 8080 }, () => cronJob.start());
 
 //Happy path: Receive a starting number of ms,
 //decrement by 1000 ms every 1000 ms until 0
@@ -32,5 +33,3 @@ wss.on("connection", function connection(ws) {
 
   ws.send("something");
 });
-
-const cronJob = new CronJob("* * * * * *", timerController.cron);
