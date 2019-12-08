@@ -11,7 +11,7 @@ const messageController = makeMessageController({
 });
 
 const timerController = Object.freeze({
-  messageController
+  message: messageController
 });
 
 module.exports = timerController;

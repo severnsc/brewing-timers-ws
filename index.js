@@ -25,7 +25,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 wss.on("connection", function connection(ws) {
   ws.on("message", reqString => {
     const req = JSON.parse(reqString);
-    timerController.messageController(res, ws);
+    timerController.message(req, ws);
   });
 
   ws.send("something");
