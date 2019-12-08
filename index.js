@@ -1,5 +1,6 @@
 const timerController = require("./controllers");
 const WebSocket = require("ws");
+const CronJob = require("cron").CronJob;
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -20,7 +21,8 @@ const wss = new WebSocket.Server({ port: 8080 });
 //Entity - Timer
 //Use Cases - Getting, Decrementing
 //Controller - req/res layer, start, stop, cronjob
-//Frameworks & Drivers - websockets, cache, persistence
+//Frameworks & Drivers - websockets, cache, persistence, cron
+//TODO: implement cron, needs access to the id along with the scoped ws to send to the right client
 
 wss.on("connection", function connection(ws) {
   ws.on("message", reqString => {
@@ -30,3 +32,5 @@ wss.on("connection", function connection(ws) {
 
   ws.send("something");
 });
+
+const cronJob = new CronJob("* * * * * *", timerController.cron);
