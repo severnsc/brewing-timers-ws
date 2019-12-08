@@ -8,7 +8,7 @@ const timersDb = Object.freeze({
 });
 
 const queueResponse = Object.freeze({
-  message: "message"
+  getMessage: () => "message"
 });
 
 const queue = Object.freeze({
