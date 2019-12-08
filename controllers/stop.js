@@ -4,7 +4,7 @@ const makeStop = deQueueId => async (req, res) => {
     res.send("must include id on request object");
   }
   try {
-    const dequeued = await deQueueId(id);
+    const dequeued = await deQueueId({ id });
     res.send(dequeued.message);
   } catch (e) {
     console.error(e);
