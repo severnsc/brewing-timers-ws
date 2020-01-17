@@ -4,7 +4,8 @@ const makeDequeue = require("./dequeue");
 const makeListQueue = require("./listQueue");
 
 const timersDb = Object.freeze({
-  findById: () => Promise.resolve(),
+  findById: () =>
+    Promise.resolve({ id: "1", duration: 2000, remainingDuration: 1000 }),
   update: () => Promise.resolve()
 });
 
@@ -15,7 +16,7 @@ const queueResponse = Object.freeze({
 const queue = Object.freeze({
   enqueue: () => Promise.resolve(queueResponse),
   dequeue: () => Promise.resolve(queueResponse),
-  get: () => []
+  get: () => Promise.resolve(["1"])
 });
 
 const decrementTimer = makeDecrementTimer({ timersDb });
