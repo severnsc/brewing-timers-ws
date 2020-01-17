@@ -22,7 +22,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 //Use Cases - Getting, Decrementing
 //Controller - req/res layer, start, stop, cronjob
 //Frameworks & Drivers - websockets, cache, persistence, cron
-//TODO: implement cron, needs access to the id along with the scoped ws to send to the right client
+//TODO: adjust mocks so that we can acutally test with a client
 
 wss.on("connection", function connection(ws) {
   const cronJob = new CronJob("* * * * * *", () => timerController.cron(ws));
