@@ -10,15 +10,17 @@ const makeDecrementTimer = ({ timersDb }) => {
       throw new RangeError("Timer not found!");
     }
 
-    const timer = makeTimer({ existing });
+    const timer = makeTimer(existing);
 
     if (timer.getRemainingDuration() <= 0) {
       return timer;
     }
 
-    const decremented = timer.decrement();
+    timer.decrement();
 
-    const updated = timersDb.update({
+    const decremented = timer;
+
+    timersDb.update({
       id: decremented.getId(),
       duration: decremented.getDuration(),
       remainingDuration: decremented.getRemainingDuration()
