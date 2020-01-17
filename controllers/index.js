@@ -10,7 +10,10 @@ const messageController = makeMessageController({
   startController,
   stopController
 });
-const cronController = makeCron(timersService.listQueue);
+const cronController = makeCron({
+  listQueue: timersService.listQueue,
+  decrementTimer: timersService.decrementTimer
+});
 
 const timerController = Object.freeze({
   message: messageController,
