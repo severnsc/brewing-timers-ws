@@ -22,7 +22,7 @@ const inMemoryDb = {};
 let inMemoryQueue = [];
 
 const timersDb = Object.freeze({
-  findById: id => {
+  findById: ({ id }) => {
     const object = inMemoryDb[id];
     return Promise.resolve(object);
   },
@@ -43,8 +43,8 @@ const queueResponse = Object.freeze({
 
 const queue = Object.freeze({
   enqueue: id => {
-    inMemoryQueue.push(id);
     timersDb.insert(createMockTimer(id));
+    inMemoryQueue.push(id);
     return Promise.resolve(queueResponse);
   },
   dequeue: id => {
