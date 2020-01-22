@@ -13,7 +13,11 @@ const makeDecrementTimer = ({ timersDb }) => {
     const timer = makeTimer(existing);
 
     if (timer.getRemainingDuration() <= 0) {
-      return timer;
+      return {
+        id: timer.getId(),
+        duration: timer.getDuration(),
+        remainingDuration: 0
+      };
     }
 
     timer.decrement();
