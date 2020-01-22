@@ -24,16 +24,18 @@ const makeDecrementTimer = ({ timersDb }) => {
 
     const decremented = timer;
 
+    const remainingDuration = decremented.getRemainingDuration();
+
     await timersDb.update({
       id: decremented.getId(),
       duration: decremented.getDuration(),
-      remainingDuration: decremented.getRemainingDuration()
+      remainingDuration: remainingDuration < 0 ? 0 : remainingDuration
     });
 
     return {
       id: decremented.getId(),
       duration: decremented.getDuration(),
-      remainingDuration: decremented.getRemainingDuration()
+      remainingDuration: remainingDuration < 0 ? 0 : remainingDuration
     };
   };
 };
