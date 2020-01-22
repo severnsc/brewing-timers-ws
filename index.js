@@ -30,4 +30,7 @@ wss.on("connection", function connection(ws) {
     const req = JSON.parse(reqString);
     timerController.message(req, ws);
   });
+  ws.on("close", () => {
+    cronJob.stop();
+  });
 });
