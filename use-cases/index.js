@@ -37,19 +37,22 @@ const timersDb = Object.freeze({
   }
 });
 
-const queueResponse = Object.freeze({
-  getMessage: () => "message"
-});
+const queueResponse = timer =>
+  Object.freeze({
+    getMessage: () => timer.remainingDuration
+  });
 
 const queue = Object.freeze({
   enqueue: id => {
-    timersDb.insert(createMockTimer(id));
+    const newTimer = createMockTimer(id);
+    timersDb.insert(newTimer);
     inMemoryQueue.push(id);
-    return Promise.resolve(queueResponse);
+    return Promise.resolve(queueResponse(inMemoryDb[id]));
   },
   dequeue: id => {
+    const timer = inMemoryDb[id];
     inMemoryQueue = inMemoryQueue.filter(item => item !== id);
-    return Promise.resolve(queueResponse);
+    return Promise.resolve(queueResponse(timer));
   },
   get: () => Promise.resolve(inMemoryQueue)
 });
