@@ -1,4 +1,4 @@
-export default function makeIdQueue({ makeQueue }) {
+function makeIdQueue({ makeQueue }) {
   return Object.freeze({
     enqueue,
     dequeue,
@@ -26,3 +26,5 @@ export default function makeIdQueue({ makeQueue }) {
     return result;
   }
 }
+
+module.exports = makeIdQueue;

@@ -1,4 +1,4 @@
-export default function makeTimersDb({ makeDb }) {
+function makeTimersDb({ makeDb }) {
   return Object.freeze({
     findById,
     update
@@ -14,3 +14,5 @@ export default function makeTimersDb({ makeDb }) {
     return result;
   }
 }
+
+module.exports = makeTimersDb;

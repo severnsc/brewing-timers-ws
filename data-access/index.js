@@ -1,5 +1,5 @@
-import makeIdQueue from "./queue";
-import makeTimersDb from "./timers-db";
+const makeIdQueue = require("./queue");
+const makeTimersDb = require("./timers-db");
 
 async function makeDb() {
   return {
