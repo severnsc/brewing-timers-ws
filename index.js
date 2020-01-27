@@ -22,7 +22,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 //Use Cases - Getting, Decrementing
 //Controller - req/res layer, start, stop, cronjob
 //Frameworks & Drivers - websockets, cache, persistence, cron
-//TODO: Connect to Hasura
+//TODO: Connect to Hasura in the data access layer
 
 wss.on("connection", function connection(ws) {
   const cronJob = new CronJob("* * * * * *", () => timerController.cron(ws));
