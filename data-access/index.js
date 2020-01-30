@@ -2,6 +2,7 @@ const makeIdQueue = require("./queue");
 const makeTimersDb = require("./timers-db");
 const ApolloClient = require("apollo-boost").default;
 const gql = require("graphql-tag");
+const tokenStorage = require("./tokenStorage");
 require("cross-fetch/polyfill");
 
 const findTimerByIdQuery = gql`
@@ -60,7 +61,15 @@ const deleteQueuedTimerMutation = gql`
 `;
 
 const client = new ApolloClient({
-  uri: process.env.GRAPHQL_API
+  uri: process.env.GRAPHQL_API,
+  request: async operation => {
+    const token = await tokenStorage.getToken();
+    operation.setContext({
+      headers: {
+        authorization: token ? `Bearer ${token}` : ""
+      }
+    });
+  }
 });
 
 async function makeDb() {
