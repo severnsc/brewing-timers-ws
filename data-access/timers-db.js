@@ -6,7 +6,11 @@ function makeTimersDb({ makeDb }) {
   async function findById({ id }) {
     const db = await makeDb();
     const result = await db.findById(id);
-    return result;
+    return {
+      id: result.id,
+      duration: result.duration,
+      remainingDuration: result.remaining_duration
+    };
   }
   async function update(timer) {
     const db = await makeDb();
