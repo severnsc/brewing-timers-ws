@@ -92,7 +92,7 @@ async function makeDb() {
         mutation: updateTimerMutation,
         variables: {
           id: timer.id,
-          remaining_duration: timer.remaining_duration
+          remaining_duration: timer.remainingDuration
         }
       })
       .then(
