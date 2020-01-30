@@ -20,21 +20,17 @@ const makeDecrementTimer = ({ timersDb }) => {
       };
     }
 
-    timer.decrement();
-
-    const decremented = timer;
-
-    const remainingDuration = decremented.getRemainingDuration();
+    const remainingDuration = timer.decrement();
 
     await timersDb.update({
-      id: decremented.getId(),
-      duration: decremented.getDuration(),
-      remainingDuration: remainingDuration < 0 ? 0 : remainingDuration
+      id: timer.getId(),
+      duration: timer.getDuration(),
+      remainingDuration
     });
 
     return {
-      id: decremented.getId(),
-      duration: decremented.getDuration(),
+      id: timer.getId(),
+      duration: timer.getDuration(),
       remainingDuration: remainingDuration < 0 ? 0 : remainingDuration
     };
   };
