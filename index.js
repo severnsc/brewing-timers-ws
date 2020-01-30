@@ -22,6 +22,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 //Use Cases - Getting, Decrementing
 //Controller - req/res layer, start, stop, cronjob
 //Frameworks & Drivers - websockets, cache, persistence, cron
+//TODO: Fix the jankiness. I think all the DB calls are slowing it down.
 
 wss.on("connection", function connection(ws) {
   const cronJob = new CronJob("* * * * * *", () => timerController.cron(ws));
