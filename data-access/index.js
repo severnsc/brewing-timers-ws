@@ -83,7 +83,7 @@ async function makeDb() {
         query: findTimerByIdQuery,
         variables: { id }
       })
-      .then(({ timers }) => timers[0])
+      .then(({ data: { timers } }) => timers[0])
       .catch(error => console.error(error));
   }
   async function update(timer) {
@@ -95,7 +95,13 @@ async function makeDb() {
           remaining_duration: timer.remaining_duration
         }
       })
-      .then(({ update_timers: { returning } }) => returning[0])
+      .then(
+        ({
+          data: {
+            update_timers: { returning }
+          }
+        }) => returning[0]
+      )
       .catch(error => console.error(error));
   }
 }
@@ -108,15 +114,13 @@ async function makeQueue() {
           mutation: insertQueuedTimerMutation,
           variables: {
             id
-          }
+          },
+          refetchQueries: [{ query: findAllQuery }]
         })
-        .then(
-          ({
-            insert_queued_timers: {
-              returning: { timer_id }
-            }
-          }) => timer_id === id
-        )
+        .then(result => {
+          const { returning } = result.data.insert_queued_timers;
+          return returning[0].timer_id == id;
+        })
         .catch(error => console.error(error));
     },
     dequeue: async id => {
@@ -125,10 +129,15 @@ async function makeQueue() {
           mutation: deleteQueuedTimerMutation,
           variables: {
             id
-          }
+          },
+          refetchQueries: [{ query: findAllQuery }]
         })
         .then(
-          ({ delete_queued_timers: { affected_rows } }) => affected_rows === 1
+          ({
+            data: {
+              delete_queued_timers: { affected_rows }
+            }
+          }) => affected_rows === 1
         )
         .catch(error => console.error(error));
     },
@@ -137,7 +146,10 @@ async function makeQueue() {
         .query({
           query: findAllQuery
         })
-        .then(({ queued_timers }) => queued_timers.map(({ id }) => id))
+        .then(result => {
+          const { queued_timers } = result.data;
+          return queued_timers.map(({ timer_id }) => timer_id);
+        })
         .catch(error => console.error(error));
     }
   };
