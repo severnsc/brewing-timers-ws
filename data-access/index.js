@@ -31,6 +31,34 @@ const updateTimerMutation = gql`
   }
 `;
 
+const findAllQuery = gql`
+  query MyQuery {
+    queued_timers {
+      timer_id
+    }
+  }
+`;
+
+const insertQueuedTimerMutation = gql`
+  mutation MyMutation($id: String) {
+    __typename
+    insert_queued_timers(objects: { timer_id: $id }) {
+      returning {
+        timer_id
+      }
+    }
+  }
+`;
+
+const deleteQueuedTimerMutation = gql`
+  mutation MyMutation($id: String) {
+    __typename
+    delete_queued_timers(where: { timer_id: { _eq: $id } }) {
+      affected_rows
+    }
+  }
+`;
+
 const client = new ApolloClient({
   uri: process.env.GRAPHQL_API
 });
@@ -65,9 +93,44 @@ async function makeDb() {
 
 async function makeQueue() {
   return {
-    enqueue: async () => true,
-    dequeue: async () => true,
-    findAll: async () => []
+    enqueue: async id => {
+      return client
+        .mutate({
+          mutation: insertQueuedTimerMutation,
+          variables: {
+            id
+          }
+        })
+        .then(
+          ({
+            insert_queued_timers: {
+              returning: { timer_id }
+            }
+          }) => timer_id === id
+        )
+        .catch(error => console.error(error));
+    },
+    dequeue: async id => {
+      return client
+        .mutate({
+          mutation: deleteQueuedTimerMutation,
+          variables: {
+            id
+          }
+        })
+        .then(
+          ({ delete_queued_timers: { affected_rows } }) => affected_rows === 1
+        )
+        .catch(error => console.error(error));
+    },
+    findAll: async () => {
+      return client
+        .query({
+          query: findAllQuery
+        })
+        .then(({ queued_timers }) => queued_timers.map(({ id }) => id))
+        .catch(error => console.error(error));
+    }
   };
 }
 
