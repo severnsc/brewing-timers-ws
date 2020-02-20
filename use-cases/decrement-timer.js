@@ -22,7 +22,7 @@ const makeDecrementTimer = ({ timersDb }) => {
 
     const remainingDuration = timer.decrement();
 
-    await timersDb.update({
+    timersDb.update({
       id: timer.getId(),
       duration: timer.getDuration(),
       remainingDuration
