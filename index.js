@@ -22,7 +22,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 //Use Cases - Getting, Decrementing
 //Controller - req/res layer, start, stop, cronjob
 //Frameworks & Drivers - websockets, cache, persistence, cron
-//TODO: Fix the jankiness. I think all the DB calls are slowing it down.
+
 const envVars = {
   GRAPHQL_API: process.env.GRAPHQL_API,
   CLIENT_ID: process.env.CLIENT_ID,
