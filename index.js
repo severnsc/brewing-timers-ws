@@ -23,6 +23,19 @@ const wss = new WebSocket.Server({ port: 8080 });
 //Controller - req/res layer, start, stop, cronjob
 //Frameworks & Drivers - websockets, cache, persistence, cron
 //TODO: Fix the jankiness. I think all the DB calls are slowing it down.
+const envVars = {
+  GRAPHQL_API: process.env.GRAPHQL_API,
+  CLIENT_ID: process.env.CLIENT_ID,
+  CLIENT_SECRET: process.env.CLIENT_SECRET
+};
+if (Object.values(envVars).some(envVar => envVar === undefined)) {
+  const unsetVars = Object.keys(envVars).filter(
+    envVar => process.env[envVar] === undefined
+  );
+  wss.close(() =>
+    console.log("Environment variables are not set: ", unsetVars)
+  );
+}
 
 wss.on("connection", function connection(ws) {
   const cronJob = new CronJob("* * * * * *", () => timerController.cron(ws));
