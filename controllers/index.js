@@ -5,7 +5,10 @@ const makeStopController = require("./stop");
 const makeCron = require("./cron");
 
 const startController = makeStartController(timersService.enqueue);
-const stopController = makeStopController(timersService.dequeue);
+const stopController = makeStopController({
+  deQueueId: timersService.dequeue,
+  stopTimer: timersService.stop
+});
 const messageController = makeMessageController({
   startController,
   stopController
