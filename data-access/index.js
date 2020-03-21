@@ -72,8 +72,8 @@ const client = new ApolloClient({
   }
 });
 
-let timerCache = null;
-let isStopped = true;
+let timerCache = {};
+let isStopped = {};
 
 async function makeDecrementDb() {
   return {
@@ -81,8 +81,8 @@ async function makeDecrementDb() {
     update
   };
   async function findById(id) {
-    if (timerCache) {
-      return Promise.resolve(timerCache);
+    if (timerCache[id]) {
+      return Promise.resolve(timerCache[id]);
     } else {
       return client
         .query({
@@ -91,28 +91,28 @@ async function makeDecrementDb() {
         })
         .then(({ data: { timers } }) => {
           const returnedTimer = timers[0];
-          timerCache = returnedTimer;
-          isStopped = false;
+          timerCache[id] = returnedTimer;
+          isStopped[id] = false;
           return returnedTimer;
         })
         .catch(error => console.error(error));
     }
   }
   async function update(timer) {
-    if (isStopped) {
-      timerCache = null;
+    if (isStopped[timer.id]) {
+      timerCache[timer.id] = null;
       return {
         id: timer.id,
         duration: timer.duration,
         remaining_duration: timer.remainingDuration
       };
     } else {
-      timerCache = {
+      timerCache[timer.id] = {
         id: timer.id,
         duration: timer.duration,
         remaining_duration: timer.remainingDuration
       };
-      return timerCache;
+      return timerCache[timer.id];
     }
   }
 }
@@ -123,10 +123,10 @@ async function makeStopDb() {
     update
   };
   async function findById(id) {
-    return Promise.resolve(timerCache);
+    return Promise.resolve(timerCache[id]);
   }
   async function update(timer) {
-    isStopped = true;
+    isStopped[timer.id] = true;
     return client
       .mutate({
         mutation: updateTimerMutation,
@@ -142,7 +142,7 @@ async function makeStopDb() {
           }
         }) => {
           const returnedTimer = returning[0];
-          timerCache = returnedTimer;
+          timerCache[timer.id] = returnedTimer;
           return returnedTimer;
         }
       )
