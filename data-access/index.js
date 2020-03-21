@@ -82,12 +82,15 @@ async function makeDecrementDb() {
   };
   async function findById(id) {
     if (timerCache[id]) {
+      console.log("Cache hit");
       return Promise.resolve(timerCache[id]);
     } else {
+      console.log("Cache miss");
       return client
         .query({
           query: findTimerByIdQuery,
-          variables: { id }
+          variables: { id },
+          fetchPolicy: "network-only"
         })
         .then(({ data: { timers } }) => {
           const returnedTimer = timers[0];
