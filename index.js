@@ -22,7 +22,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 //Use Cases - Getting, Decrementing
 //Controller - req/res layer, start, stop, cronjob
 //Frameworks & Drivers - websockets, cache, persistence, cron
-//TODO: On stop, update the timer with the sent time
+//TODO: Fix the timer cache to use array instead of object
 const envVars = {
   GRAPHQL_API: process.env.GRAPHQL_API,
   CLIENT_ID: process.env.CLIENT_ID,
