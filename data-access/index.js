@@ -100,7 +100,6 @@ async function makeDecrementDb() {
   }
   async function update(timer) {
     if (isStopped[timer.id]) {
-      timerCache[timer.id] = null;
       return {
         id: timer.id,
         duration: timer.duration,
@@ -126,7 +125,6 @@ async function makeStopDb() {
     return Promise.resolve(timerCache[id]);
   }
   async function update(timer) {
-    isStopped[timer.id] = true;
     return client
       .mutate({
         mutation: updateTimerMutation,
@@ -142,7 +140,8 @@ async function makeStopDb() {
           }
         }) => {
           const returnedTimer = returning[0];
-          timerCache[timer.id] = returnedTimer;
+          isStopped[timer.id] = true;
+          timerCache[timer.id] = null;
           return returnedTimer;
         }
       )
@@ -150,7 +149,7 @@ async function makeStopDb() {
   }
 }
 
-async function makeQueue() {
+/* async function makeQueue() {
   return {
     enqueue: async id => {
       return client
@@ -197,16 +196,32 @@ async function makeQueue() {
         .catch(error => console.error(error));
     }
   };
+} */
+let queue = [];
+async function makeQueue() {
+  return {
+    enqueue: async id => {
+      queue = [...queue, id];
+      return Promise.resolve(true);
+    },
+    dequeue: async id => {
+      queue = queue.filter(_id => _id !== id);
+      return Promise.resolve(true);
+    },
+    findAll: async () => {
+      return Promise.resolve(queue);
+    }
+  };
 }
 
 const stopTimersDb = makeTimersDb({ makeDb: makeStopDb });
 const decrementTimersDb = makeTimersDb({ makeDb: makeDecrementDb });
-const queue = makeIdQueue({ makeQueue });
+const idQueue = makeIdQueue({ makeQueue });
 
 const dataAccess = Object.freeze({
   stopTimersDb,
   decrementTimersDb,
-  queue
+  queue: idQueue
 });
 
 module.exports = dataAccess;
