@@ -72,21 +72,61 @@ const client = new ApolloClient({
   }
 });
 
-async function makeDb() {
+let timerCache = null;
+let isStopped = true;
+
+async function makeDecrementDb() {
   return {
     findById,
     update
   };
   async function findById(id) {
-    return client
-      .query({
-        query: findTimerByIdQuery,
-        variables: { id }
-      })
-      .then(({ data: { timers } }) => timers[0])
-      .catch(error => console.error(error));
+    if (timerCache) {
+      return Promise.resolve(timerCache);
+    } else {
+      return client
+        .query({
+          query: findTimerByIdQuery,
+          variables: { id }
+        })
+        .then(({ data: { timers } }) => {
+          const returnedTimer = timers[0];
+          timerCache = returnedTimer;
+          isStopped = false;
+          return returnedTimer;
+        })
+        .catch(error => console.error(error));
+    }
   }
   async function update(timer) {
+    if (isStopped) {
+      timerCache = null;
+      return {
+        id: timer.id,
+        duration: timer.duration,
+        remaining_duration: timer.remainingDuration
+      };
+    } else {
+      timerCache = {
+        id: timer.id,
+        duration: timer.duration,
+        remaining_duration: timer.remainingDuration
+      };
+      return timerCache;
+    }
+  }
+}
+
+async function makeStopDb() {
+  return {
+    findById,
+    update
+  };
+  async function findById(id) {
+    return Promise.resolve(timerCache);
+  }
+  async function update(timer) {
+    isStopped = true;
     return client
       .mutate({
         mutation: updateTimerMutation,
@@ -100,7 +140,11 @@ async function makeDb() {
           data: {
             update_timers: { returning }
           }
-        }) => returning[0]
+        }) => {
+          const returnedTimer = returning[0];
+          timerCache = returnedTimer;
+          return returnedTimer;
+        }
       )
       .catch(error => console.error(error));
   }
@@ -155,11 +199,13 @@ async function makeQueue() {
   };
 }
 
-const timersDb = makeTimersDb({ makeDb });
+const stopTimersDb = makeTimersDb({ makeDb: makeStopDb });
+const decrementTimersDb = makeTimersDb({ makeDb: makeDecrementDb });
 const queue = makeIdQueue({ makeQueue });
 
 const dataAccess = Object.freeze({
-  timersDb,
+  stopTimersDb,
+  decrementTimersDb,
   queue
 });
 
