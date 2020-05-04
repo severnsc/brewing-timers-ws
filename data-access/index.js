@@ -71,61 +71,14 @@ const client = new ApolloClient({
     });
   },
 });
-
-let timerCache = {};
-let isStopped = {};
-
-async function makeDecrementDb() {
-  return {
-    findById,
-    update,
-  };
-  async function findById(id) {
-    if (timerCache[id]) {
-      console.log("Cache hit");
-      return Promise.resolve(timerCache[id]);
-    } else {
-      console.log("Cache miss");
-      return client
-        .query({
-          query: findTimerByIdQuery,
-          variables: { id },
-          fetchPolicy: "network-only",
-        })
-        .then(({ data: { timers } }) => {
-          const returnedTimer = timers[0];
-          timerCache[id] = returnedTimer;
-          isStopped[id] = false;
-          return returnedTimer;
-        })
-        .catch((error) => console.error(error));
-    }
-  }
-  async function update(timer) {
-    if (isStopped[timer.id]) {
-      return {
-        id: timer.id,
-        duration: timer.duration,
-        remaining_duration: timer.remainingDuration,
-      };
-    } else {
-      timerCache[timer.id] = {
-        id: timer.id,
-        duration: timer.duration,
-        remaining_duration: timer.remainingDuration,
-      };
-      return timerCache[timer.id];
-    }
-  }
-}
-
+let queue = {};
 async function makeStopDb() {
   return {
     findById,
     update,
   };
   async function findById(id) {
-    return Promise.resolve(timerCache[id]);
+    return Promise.resolve(queue[id]);
   }
   async function update(timer) {
     return client
@@ -143,68 +96,40 @@ async function makeStopDb() {
           },
         }) => {
           const returnedTimer = returning[0];
-          isStopped[timer.id] = true;
-          timerCache[timer.id] = null;
           return returnedTimer;
         }
       )
       .catch((error) => console.error(error));
   }
 }
-
-/* async function makeQueue() {
+async function makeDecrementDb() {
   return {
-    enqueue: async id => {
-      return client
-        .mutate({
-          mutation: insertQueuedTimerMutation,
-          variables: {
-            id
-          },
-          refetchQueries: [{ query: findAllQuery }]
-        })
-        .then(result => {
-          const { returning } = result.data.insert_queued_timers;
-          return returning[0].timer_id == id;
-        })
-        .catch(error => console.error(error));
-    },
-    dequeue: async id => {
-      return client
-        .mutate({
-          mutation: deleteQueuedTimerMutation,
-          variables: {
-            id
-          },
-          refetchQueries: [{ query: findAllQuery }]
-        })
-        .then(
-          ({
-            data: {
-              delete_queued_timers: { affected_rows }
-            }
-          }) => affected_rows === 1
-        )
-        .catch(error => console.error(error));
-    },
-    findAll: async () => {
-      return client
-        .query({
-          query: findAllQuery
-        })
-        .then(result => {
-          const { queued_timers } = result.data;
-          return queued_timers.map(({ timer_id }) => timer_id);
-        })
-        .catch(error => console.error(error));
-    }
+    findById,
+    update,
   };
-} */
-let queue = {};
+  async function findById(id) {
+    const found = queue[id];
+    return {
+      ...found,
+      remaining_duration: found.remainingDuration,
+    };
+  }
+  async function update(timer) {
+    queue[timer.id] = {
+      ...queue[timer.id],
+      remainingDuration: timer.remainingDuration,
+    };
+    return {
+      id: timer.id,
+      duration: timer.duration,
+      remaining_duration: timer.remainingDuration,
+    };
+  }
+}
 function makeMakeQueue({ decrementTimer }) {
   return function makeQueue() {
     return {
-      enqueue: async ({ id, sendResponse }) => {
+      enqueue: async ({ id, duration, sendResponse }) => {
         async function cron({ id, res }) {
           try {
             const decremented = await decrementTimer({ id });
@@ -214,7 +139,11 @@ function makeMakeQueue({ decrementTimer }) {
             res.send(e.message);
           }
         }
-        queue[id] = true;
+        queue[id] = {
+          id,
+          duration: Number(duration),
+          remainingDuration: Number(duration),
+        };
         setTimeout(function run() {
           if (queue[id]) {
             cron({ id, res: sendResponse });

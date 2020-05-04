@@ -9,14 +9,14 @@ const makeDecrementTimer = ({ timersDb }) => {
     if (!existing) {
       throw new RangeError("Timer not found!");
     }
-
+    console.log("existing", existing);
     const timer = makeTimer(existing);
 
     if (timer.getRemainingDuration() <= 0) {
       return {
         id: timer.getId(),
         duration: timer.getDuration(),
-        remainingDuration: 0
+        remainingDuration: 0,
       };
     }
 
@@ -25,13 +25,13 @@ const makeDecrementTimer = ({ timersDb }) => {
     await timersDb.update({
       id: timer.getId(),
       duration: timer.getDuration(),
-      remainingDuration
+      remainingDuration,
     });
 
     return {
       id: timer.getId(),
       duration: timer.getDuration(),
-      remainingDuration: remainingDuration < 0 ? 0 : remainingDuration
+      remainingDuration: remainingDuration < 0 ? 0 : remainingDuration,
     };
   };
 };
