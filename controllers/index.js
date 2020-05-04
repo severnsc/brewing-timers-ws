@@ -1,8 +1,8 @@
+const dataAccess = require("../data-access");
 const timersService = require("../use-cases");
 const makeMessageController = require("./message");
 const makeStartController = require("./start");
 const makeStopController = require("./stop");
-const cron = require("./cron");
 
 const startController = makeStartController(timersService.enqueue);
 const stopController = makeStopController({
@@ -16,7 +16,6 @@ const messageController = makeMessageController({
 
 const timerController = Object.freeze({
   message: messageController,
-  cron,
 });
 
 module.exports = timerController;

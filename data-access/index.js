@@ -3,7 +3,6 @@ const makeTimersDb = require("./timers-db");
 const ApolloClient = require("apollo-boost").default;
 const gql = require("graphql-tag");
 const tokenStorage = require("./tokenStorage");
-const { cron } = require("../controllers");
 require("cross-fetch/polyfill");
 
 const findTimerByIdQuery = gql`
@@ -202,36 +201,47 @@ async function makeStopDb() {
   };
 } */
 let queue = {};
-async function makeQueue() {
-  return {
-    enqueue: async ({ id, sendResponse }) => {
-      queue[id] = true;
-      setTimeout(function run() {
-        if (queue[id]) {
-          cron({ id, res: sendResponse });
-          setTimeout(run, 1000);
+function makeMakeQueue({ decrementTimer }) {
+  return function makeQueue() {
+    return {
+      enqueue: async ({ id, sendResponse }) => {
+        async function cron({ id, res }) {
+          try {
+            const decremented = await decrementTimer({ id });
+            res.send(decremented.remainingDuration);
+          } catch (e) {
+            console.error(e);
+            res.send(e.message);
+          }
         }
-      }, 1000);
-      return Promise.resolve(true);
-    },
-    dequeue: async (id) => {
-      queue[id] = false;
-      return Promise.resolve(true);
-    },
-    findAll: async () => {
-      return Promise.resolve(queue);
-    },
+        queue[id] = true;
+        setTimeout(function run() {
+          if (queue[id]) {
+            cron({ id, res: sendResponse });
+            setTimeout(run, 1000);
+          }
+        }, 1000);
+        return Promise.resolve(true);
+      },
+      dequeue: async (id) => {
+        queue[id] = false;
+        return Promise.resolve(true);
+      },
+      findAll: async () => {
+        return Promise.resolve(queue);
+      },
+    };
   };
 }
 
 const stopTimersDb = makeTimersDb({ makeDb: makeStopDb });
 const decrementTimersDb = makeTimersDb({ makeDb: makeDecrementDb });
-const idQueue = makeIdQueue({ makeQueue });
 
 const dataAccess = Object.freeze({
   stopTimersDb,
   decrementTimersDb,
-  queue: idQueue,
+  makeMakeQueue,
+  makeIdQueue,
 });
 
 module.exports = dataAccess;
