@@ -5,17 +5,6 @@ const gql = require("graphql-tag");
 const tokenStorage = require("./tokenStorage");
 require("cross-fetch/polyfill");
 
-const findTimerByIdQuery = gql`
-  query FindTimerById($id: uuid) {
-    __typename
-    timers(where: { id: { _eq: $id } }) {
-      id
-      duration
-      remaining_duration
-    }
-  }
-`;
-
 const updateTimerMutation = gql`
   mutation MyMutation($id: uuid, $remaining_duration: Int) {
     __typename
@@ -28,34 +17,6 @@ const updateTimerMutation = gql`
         duration
         remaining_duration
       }
-    }
-  }
-`;
-
-const findAllQuery = gql`
-  query MyQuery {
-    queued_timers {
-      timer_id
-    }
-  }
-`;
-
-const insertQueuedTimerMutation = gql`
-  mutation MyMutation($id: String) {
-    __typename
-    insert_queued_timers(objects: { timer_id: $id }) {
-      returning {
-        timer_id
-      }
-    }
-  }
-`;
-
-const deleteQueuedTimerMutation = gql`
-  mutation MyMutation($id: String) {
-    __typename
-    delete_queued_timers(where: { timer_id: { _eq: $id } }) {
-      affected_rows
     }
   }
 `;
