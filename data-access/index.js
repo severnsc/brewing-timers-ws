@@ -3,6 +3,7 @@ const makeTimersDb = require("./timers-db");
 const ApolloClient = require("apollo-boost").default;
 const gql = require("graphql-tag");
 const tokenStorage = require("./tokenStorage");
+const { cron } = require("../controllers");
 require("cross-fetch/polyfill");
 
 const findTimerByIdQuery = gql`
@@ -62,14 +63,14 @@ const deleteQueuedTimerMutation = gql`
 
 const client = new ApolloClient({
   uri: process.env.GRAPHQL_API,
-  request: async operation => {
+  request: async (operation) => {
     const token = await tokenStorage.getToken();
     operation.setContext({
       headers: {
-        authorization: token ? `Bearer ${token}` : ""
-      }
+        authorization: token ? `Bearer ${token}` : "",
+      },
     });
-  }
+  },
 });
 
 let timerCache = {};
@@ -78,7 +79,7 @@ let isStopped = {};
 async function makeDecrementDb() {
   return {
     findById,
-    update
+    update,
   };
   async function findById(id) {
     if (timerCache[id]) {
@@ -90,7 +91,7 @@ async function makeDecrementDb() {
         .query({
           query: findTimerByIdQuery,
           variables: { id },
-          fetchPolicy: "network-only"
+          fetchPolicy: "network-only",
         })
         .then(({ data: { timers } }) => {
           const returnedTimer = timers[0];
@@ -98,7 +99,7 @@ async function makeDecrementDb() {
           isStopped[id] = false;
           return returnedTimer;
         })
-        .catch(error => console.error(error));
+        .catch((error) => console.error(error));
     }
   }
   async function update(timer) {
@@ -106,13 +107,13 @@ async function makeDecrementDb() {
       return {
         id: timer.id,
         duration: timer.duration,
-        remaining_duration: timer.remainingDuration
+        remaining_duration: timer.remainingDuration,
       };
     } else {
       timerCache[timer.id] = {
         id: timer.id,
         duration: timer.duration,
-        remaining_duration: timer.remainingDuration
+        remaining_duration: timer.remainingDuration,
       };
       return timerCache[timer.id];
     }
@@ -122,7 +123,7 @@ async function makeDecrementDb() {
 async function makeStopDb() {
   return {
     findById,
-    update
+    update,
   };
   async function findById(id) {
     return Promise.resolve(timerCache[id]);
@@ -133,14 +134,14 @@ async function makeStopDb() {
         mutation: updateTimerMutation,
         variables: {
           id: timer.id,
-          remaining_duration: timer.remainingDuration
-        }
+          remaining_duration: timer.remainingDuration,
+        },
       })
       .then(
         ({
           data: {
-            update_timers: { returning }
-          }
+            update_timers: { returning },
+          },
         }) => {
           const returnedTimer = returning[0];
           isStopped[timer.id] = true;
@@ -148,7 +149,7 @@ async function makeStopDb() {
           return returnedTimer;
         }
       )
-      .catch(error => console.error(error));
+      .catch((error) => console.error(error));
   }
 }
 
@@ -200,20 +201,26 @@ async function makeStopDb() {
     }
   };
 } */
-let queue = [];
+let queue = {};
 async function makeQueue() {
   return {
-    enqueue: async id => {
-      queue = [...queue, id];
+    enqueue: async ({ id, sendResponse }) => {
+      queue[id] = true;
+      setTimeout(function run() {
+        if (queue[id]) {
+          cron({ id, res: sendResponse });
+          setTimeout(run, 1000);
+        }
+      }, 1000);
       return Promise.resolve(true);
     },
-    dequeue: async id => {
-      queue = queue.filter(_id => _id !== id);
+    dequeue: async (id) => {
+      queue[id] = false;
       return Promise.resolve(true);
     },
     findAll: async () => {
       return Promise.resolve(queue);
-    }
+    },
   };
 }
 
@@ -224,7 +231,7 @@ const idQueue = makeIdQueue({ makeQueue });
 const dataAccess = Object.freeze({
   stopTimersDb,
   decrementTimersDb,
-  queue: idQueue
+  queue: idQueue,
 });
 
 module.exports = dataAccess;

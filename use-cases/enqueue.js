@@ -1,12 +1,12 @@
-const makeEnqueue = ({ queue }) => async ({ id }) => {
+const makeEnqueue = ({ queue }) => async ({ id, sendResponse }) => {
   if (!id) {
     throw new Error("You must supply an id!");
   }
 
-  const enqueued = await queue.enqueue(id);
+  const enqueued = await queue.enqueue({ id, sendResponse });
 
   return {
-    message: enqueued.getMessage()
+    message: enqueued.getMessage(),
   };
 };
 

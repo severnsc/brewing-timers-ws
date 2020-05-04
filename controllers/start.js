@@ -1,7 +1,7 @@
-const makeStart = enqueueId => async (req, res) => {
+const makeStart = (enqueueId) => async (req, res) => {
   const id = req.id;
   try {
-    const enqueued = await enqueueId({ id, res });
+    const enqueued = await enqueueId({ id, sendResponse: res });
     res.send(enqueued.message);
   } catch (e) {
     console.error(e);

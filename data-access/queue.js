@@ -2,14 +2,14 @@ function makeIdQueue({ makeQueue }) {
   return Object.freeze({
     enqueue,
     dequeue,
-    get
+    get,
   });
-  async function enqueue(id) {
+  async function enqueue({ id, sendResponse }) {
     const queue = await makeQueue();
-    const isEnqueued = await queue.enqueue(id);
+    const isEnqueued = await queue.enqueue({ id, sendResponse });
     const message = isEnqueued ? "Enqueue successful" : "Enqueue failed";
     return {
-      getMessage: () => message
+      getMessage: () => message,
     };
   }
   async function dequeue(id) {
@@ -17,7 +17,7 @@ function makeIdQueue({ makeQueue }) {
     const isDequeued = await queue.dequeue(id);
     const message = isDequeued ? "Dequeue successful" : "Dequeue failed";
     return {
-      getMessage: () => message
+      getMessage: () => message,
     };
   }
   async function get() {

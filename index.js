@@ -1,6 +1,5 @@
 const timerController = require("./controllers");
 const WebSocket = require("ws");
-const CronJob = require("cron").CronJob;
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -26,11 +25,11 @@ const wss = new WebSocket.Server({ port: 8080 });
 const envVars = {
   GRAPHQL_API: process.env.GRAPHQL_API,
   CLIENT_ID: process.env.CLIENT_ID,
-  CLIENT_SECRET: process.env.CLIENT_SECRET
+  CLIENT_SECRET: process.env.CLIENT_SECRET,
 };
-if (Object.values(envVars).some(envVar => envVar === undefined)) {
+if (Object.values(envVars).some((envVar) => envVar === undefined)) {
   const unsetVars = Object.keys(envVars).filter(
-    envVar => process.env[envVar] === undefined
+    (envVar) => process.env[envVar] === undefined
   );
   wss.close(() =>
     console.log("Environment variables are not set: ", unsetVars)
@@ -38,13 +37,8 @@ if (Object.values(envVars).some(envVar => envVar === undefined)) {
 }
 
 wss.on("connection", function connection(ws) {
-  const cronJob = new CronJob("* * * * * *", () => timerController.cron(ws));
-  cronJob.start();
-  ws.on("message", reqString => {
+  ws.on("message", (reqString) => {
     const req = JSON.parse(reqString);
     timerController.message(req, ws);
-  });
-  ws.on("close", () => {
-    cronJob.stop();
   });
 });
