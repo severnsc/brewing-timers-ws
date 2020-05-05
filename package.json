@@ -9,12 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "apollo-boost": "^0.4.7",
-    "cron": "^1.7.2",
-    "cross-fetch": "^3.0.4",
-    "graphql": "^14.6.0",
-    "graphql-tag": "^2.10.1",
-    "request": "^2.88.2",
     "ws": "^7.2.0"
   }
 }
