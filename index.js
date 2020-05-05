@@ -1,7 +1,7 @@
 const timerController = require("./controllers");
 const WebSocket = require("ws");
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: process.env.PORT });
 
 //Happy path: Receive a starting number of ms,
 //decrement by 1000 ms every 1000 ms until 0
