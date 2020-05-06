@@ -37,15 +37,45 @@ if (Object.values(envVars).some((envVar) => envVar === undefined)) {
   );
 }
 
+const cache = {};
+const TIMERS = "TIMERS";
+const CACHE = "CACHE";
 wss.on("connection", function connection(ws) {
-  const token = PubSub.subscribe("TIMERS", (msg, data) => ws.send(data));
+  const token = PubSub.subscribe(TIMERS, (msg, data) => ws.send(data));
+  let cacheToken;
+  const messenger = {
+    send: (message) => {
+      PubSub.publish(TIMERS, message);
+      if (message == 0) {
+        cache[ws.userId] = null;
+        return PubSub.unsubscribe(cacheToken);
+      }
+      PubSub.publish(CACHE, message);
+    },
+  };
   ws.on("message", (reqString) => {
     const req = JSON.parse(reqString);
-    const messenger = {
-      send: (message) => {
-        PubSub.publish("TIMERS", message);
-      },
-    };
+    if (req.type === "start") {
+      if (!req.userId) {
+        ws.send("You must provide a userId!");
+      } else {
+        ws.userId = req.userId;
+        cacheToken = PubSub.subscribe(CACHE, (msg, data) => {
+          cache[req.userId] = { ...cache[req.userId], remainingDuration: data };
+          console.log(cache[req.userId]);
+        });
+        cache[req.userId] = {
+          id: req.id,
+          duration: req.duration,
+          remainingDuration: req.duration,
+        };
+      }
+    }
+    if (req.type === "stop") {
+      PubSub.unsubscribe(cacheToken);
+      delete cache[ws.userId];
+      console.log(cache);
+    }
     timerController.message(req, messenger);
   });
   ws.on("close", () => {
