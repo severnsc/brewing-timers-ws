@@ -9,7 +9,7 @@ const makeDecrementTimer = ({ timersDb }) => {
     if (!existing) {
       throw new RangeError("Timer not found!");
     }
-    console.log("existing", existing);
+
     const timer = makeTimer(existing);
 
     if (timer.getRemainingDuration() <= 0) {
