@@ -1,5 +1,6 @@
 const timerController = require("./controllers");
 const WebSocket = require("ws");
+const PubSub = require("pubsub-js");
 
 const wss = new WebSocket.Server({ port: process.env.PORT });
 
@@ -37,8 +38,17 @@ if (Object.values(envVars).some((envVar) => envVar === undefined)) {
 }
 
 wss.on("connection", function connection(ws) {
+  const token = PubSub.subscribe("TIMERS", (msg, data) => ws.send(data));
   ws.on("message", (reqString) => {
     const req = JSON.parse(reqString);
-    timerController.message(req, ws);
+    const messenger = {
+      send: (message) => {
+        PubSub.publish("TIMERS", message);
+      },
+    };
+    timerController.message(req, messenger);
+  });
+  ws.on("close", () => {
+    PubSub.unsubscribe(token);
   });
 });
