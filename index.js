@@ -35,10 +35,87 @@ if (Object.values(envVars).some((envVar) => envVar === undefined)) {
     console.log("Environment variables are not set: ", unsetVars)
   );
 }
+const cache = {};
 
-wss.on("connection", function connection(ws) {
+wss.on("connection", function connection(ws, request) {
+  ws.isAlive = true;
+  ws.on("pong", heartbeat);
+  ws.writeState = "normal";
+  let userId;
+  const makeWriteStateMachine = ({ ws }) => {
+    return {
+      send: (message) => {
+        if (ws.writeState === "normal") {
+          ws.send(message);
+        }
+        if (ws.writeState === "cacheWrite") {
+          cache[userId] = message;
+        }
+      },
+    };
+  };
+  const writeStateMachine = makeWriteStateMachine({
+    ws,
+    timerController,
+  });
+  const isUserInCache = userId && Object.keys(cache).includes(userId);
+  let readState = isUserInCache ? "readCache" : "normal";
+  const makeReadStateMachine = ({ ws, timerController }) => {
+    setTimeout(function run() {
+      if (readState === "readCache") {
+        const cached = cache[userId];
+        ws.send(cached);
+        setTimeout(run, 1000);
+      }
+    }, 1000);
+    return (req) => {
+      if (readState === "readCache") {
+        if (req.type === "stop") {
+          delete cache[userId];
+          readState = "normal";
+        }
+        if (req.type === "start") {
+          return;
+        }
+      }
+      return timerController.message(req, ws);
+    };
+  };
+  const readStateMachine = makeReadStateMachine({
+    ws: writeStateMachine,
+    timerController,
+  });
   ws.on("message", (reqString) => {
     const req = JSON.parse(reqString);
-    timerController.message(req, ws);
+    if (!userId) {
+      if (req.type !== "userId") {
+        return ws.send("userId required to begin");
+      } else {
+        return (userId = req.userId);
+      }
+    } else {
+      readStateMachine(req);
+    }
   });
+});
+function noop() {}
+
+function heartbeat() {
+  this.isAlive = true;
+}
+const interval = setInterval(function ping() {
+  wss.clients.forEach(function each(ws) {
+    console.log(ws.isAlive);
+    if (ws.isAlive === false) {
+      ws.writeState = "cacheWrite";
+      cache[userId] = true;
+      return ws.terminate();
+    }
+
+    ws.isAlive = false;
+    ws.ping(noop);
+  });
+}, 1000);
+wss.on("close", function close() {
+  clearInterval(interval);
 });
