@@ -27,6 +27,12 @@ const envVars = {
   GRAPHQL_API: process.env.GRAPHQL_API,
   CLIENT_ID: process.env.CLIENT_ID,
   CLIENT_SECRET: process.env.CLIENT_SECRET,
+  TO: process.env.TO,
+  MESSAGING_URL: process.env.MESSAGING_URL,
+  AUTH0_URL: process.env.AUTH0_URL,
+  AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
+  AUTH0_CLIENT_SECRET: process.env.AUTH0_CLIENT_SECRET,
+  AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
 };
 if (Object.values(envVars).some((envVar) => envVar === undefined)) {
   const unsetVars = Object.keys(envVars).filter(
