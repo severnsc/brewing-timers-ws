@@ -1,5 +1,7 @@
 const makeIdQueue = require("./queue");
 const makeTimersDb = require("./timers-db");
+const getToken = require("./token");
+const axios = require("axios");
 
 let queue = {};
 async function makeStopDb() {
@@ -39,7 +41,29 @@ async function makeDecrementDb() {
   }
 }
 const sendAlert = (alert) => {
-  console.log(alert.message);
+  const cb = (chunk) => {
+    token = JSON.parse(chunk).access_token;
+    const options = {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+    };
+    const body = {
+      message: alert.message,
+      to: process.env.TO,
+    };
+    const instance = axios.create({
+      baseURL: process.env.MESSAGING_URL,
+      headers: options.headers,
+    });
+    instance
+      .post("/send", body)
+      .then((res) => console.log(res.data))
+      .catch((e) => console.log(e));
+  };
+  getToken(cb);
 };
 function makeMakeQueue({ decrementTimer }) {
   return function makeQueue() {
