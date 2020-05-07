@@ -38,13 +38,20 @@ async function makeDecrementDb() {
     };
   }
 }
+const sendAlert = (alert) => {
+  console.log(alert.message);
+};
 function makeMakeQueue({ decrementTimer }) {
   return function makeQueue() {
     return {
-      enqueue: async ({ id, duration, sendResponse }) => {
+      enqueue: async ({ id, duration, alerts, sendResponse }) => {
         async function cron({ id, res }) {
           try {
             const decremented = await decrementTimer({ id });
+            const alertsToSend = alerts.filter(
+              ({ sendAt }) => sendAt === decremented.remainingDuration
+            );
+            alertsToSend.forEach((alert) => sendAlert(alert));
             res.send(decremented.remainingDuration);
           } catch (e) {
             console.error(e);
@@ -55,6 +62,7 @@ function makeMakeQueue({ decrementTimer }) {
           id,
           duration: Number(duration),
           remainingDuration: Number(duration),
+          alerts,
         };
         setTimeout(function run() {
           if (queue[id]) {
