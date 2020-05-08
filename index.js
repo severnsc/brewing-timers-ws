@@ -3,6 +3,12 @@ const WebSocket = require("ws");
 const PubSub = require("pubsub-js");
 
 const wss = new WebSocket.Server({ port: process.env.PORT });
+wss.shouldHandle = (req) => {
+  if (req.headers.origin === process.env.ORIGIN) {
+    return true;
+  }
+  return false;
+};
 
 //Happy path: Receive a starting number of ms,
 //decrement by 1000 ms every 1000 ms until 0
@@ -24,15 +30,13 @@ const wss = new WebSocket.Server({ port: process.env.PORT });
 //Frameworks & Drivers - websockets, cache, persistence, cron
 //TODO: clear queue on close
 const envVars = {
-  GRAPHQL_API: process.env.GRAPHQL_API,
-  CLIENT_ID: process.env.CLIENT_ID,
-  CLIENT_SECRET: process.env.CLIENT_SECRET,
   TO: process.env.TO,
   MESSAGING_URL: process.env.MESSAGING_URL,
   AUTH0_URL: process.env.AUTH0_URL,
   AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
   AUTH0_CLIENT_SECRET: process.env.AUTH0_CLIENT_SECRET,
   AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
+  ORIGIN: process.env.ORIGIN,
 };
 if (Object.values(envVars).some((envVar) => envVar === undefined)) {
   const unsetVars = Object.keys(envVars).filter(
