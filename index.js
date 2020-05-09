@@ -30,7 +30,6 @@ wss.shouldHandle = (req) => {
 //Frameworks & Drivers - websockets, cache, persistence, cron
 //TODO: clear queue on close
 const envVars = {
-  TO: process.env.TO,
   MESSAGING_URL: process.env.MESSAGING_URL,
   AUTH0_URL: process.env.AUTH0_URL,
   AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
