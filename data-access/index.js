@@ -40,7 +40,7 @@ async function makeDecrementDb() {
     };
   }
 }
-const sendAlert = (alert) => {
+const sendAlert = (alert, to) => {
   const cb = (chunk) => {
     token = JSON.parse(chunk).access_token;
     const options = {
@@ -52,7 +52,7 @@ const sendAlert = (alert) => {
     };
     const body = {
       message: alert.message,
-      to: process.env.TO,
+      to,
     };
     const instance = axios.create({
       baseURL: process.env.MESSAGING_URL,
@@ -68,14 +68,14 @@ const sendAlert = (alert) => {
 function makeMakeQueue({ decrementTimer }) {
   return function makeQueue() {
     return {
-      enqueue: async ({ id, duration, alerts, sendResponse }) => {
+      enqueue: async ({ id, duration, alerts, sendResponse, to }) => {
         async function cron({ id, res }) {
           try {
             const decremented = await decrementTimer({ id });
             const alertsToSend = alerts.filter(
               ({ sendAt }) => sendAt === decremented.remainingDuration
             );
-            alertsToSend.forEach((alert) => sendAlert(alert));
+            alertsToSend.forEach((alert) => sendAlert(alert, to));
             res.send(decremented.remainingDuration);
           } catch (e) {
             console.error(e);

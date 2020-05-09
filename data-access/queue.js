@@ -4,13 +4,14 @@ function makeIdQueue({ makeQueue }) {
     dequeue,
     get,
   });
-  async function enqueue({ id, duration, alerts, sendResponse }) {
+  async function enqueue({ id, duration, alerts, sendResponse, to }) {
     const queue = makeQueue();
     const isEnqueued = await queue.enqueue({
       id,
       duration,
       alerts,
       sendResponse,
+      to,
     });
     const message = isEnqueued ? "Enqueue successful" : "Enqueue failed";
     return {
